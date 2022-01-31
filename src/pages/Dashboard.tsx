@@ -1,7 +1,9 @@
-import { FC, useEffect, useMemo } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Artist } from "spotify-types";
-import { useAPIRequest, useRecentlyPlayed } from "../data/useApiRequest";
+import { ArtistList } from "../components/ArtistList";
+import { TrackList } from "../components/TrackList";
+import { useRecentlyPlayed } from "../data/useRecentTracks";
 
 interface Props {
   token: string;
@@ -9,57 +11,52 @@ interface Props {
 }
 
 export const Dashboard: FC<Props> = ({ token, handleLogout }) => {
-  const recently = useRecentlyPlayed(token);
-
+  const [status, data] = useRecentlyPlayed(token);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [artistID, setArtistID] = useState(searchParams.get("artistID") ?? "");
+
+  useEffect(() => {
+    const params = new URLSearchParams({ artistID });
+    setSearchParams(params);
+  }, [artistID]);
 
   const artists = useMemo(() => {
-    const all = recently.data.items.flatMap((item) => item.track.artists);
     const set = new Set();
-    return all.filter((artist) => {
-      const id = artist.id;
-      return set.has(id) ? false : set.add(id);
-    });
-  }, [recently]);
+    return data
+      .flatMap((item) => item.artists)
+      .filter((artist) => {
+        const id = artist.id;
+        return set.has(id) ? false : set.add(id);
+      });
+  }, [data]);
 
-  if (recently.status === "loading") {
-    return (
-      <>
-        <h1>Loading...</h1>;<button onClick={handleLogout}>Log out</button>
-      </>
+  const tracks = useMemo(() => {
+    return data.filter((track) =>
+      artistID ? track.artists.some((artist) => artist.id === artistID) : true
     );
-  }
+  }, [data, artistID]);
 
   const onClickArtist = (artist: Artist) => {
-    const params = new URLSearchParams({
-      artistID: artist.id,
-    });
-
-    setSearchParams(params);
+    const nextID = artistID === artist.id ? "" : artist.id;
+    setArtistID(nextID);
   };
 
-  return (
-    <div>
-      {artists.map((a) => (
+  switch (status) {
+    case "loading":
+      return <span>Loading...</span>;
+    case "error":
+      return <button onClick={handleLogout}>Log out</button>;
+    default:
+    case "ok":
+      return (
         <div>
-          <button onClick={() => onClickArtist(a)}>{a.name}</button>
+          <ArtistList
+            items={artists}
+            selectedID={artistID}
+            handleSelect={onClickArtist}
+          />
+          <TrackList items={tracks} />
         </div>
-      ))}
-    </div>
-  );
-
-  return <h1>Woohoo</h1>;
-
-  // console.log(artists);
-
-  // return (
-  //   <>
-  //     <h1>Home</h1>
-  //     <span>{token}</span>
-  //     {recently.data.items.map((item) => (
-  //       <h1>{item.track.name}</h1>
-  //     ))}
-  //     <button onClick={handleLogout}>Log out</button>
-  //   </>
-  // );
+      );
+  }
 };

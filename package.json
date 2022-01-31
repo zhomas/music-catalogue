@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@emotion/react": "^11.7.1",
+    "@emotion/styled": "^11.6.0",
     "@linaria/babel-preset": "^3.0.0-beta.15",
     "@linaria/core": "^3.0.0-beta.15",
     "@linaria/react": "^3.0.0-beta.15",
@@ -51,6 +53,8 @@
     "printWidth": 90
   },
   "devDependencies": {
+    "@testing-library/react-hooks": "^7.0.2",
+    "nock": "^13.2.2",
     "react-app-rewired": "^2.1.11",
     "spotify-types": "^1.0.5"
   }
