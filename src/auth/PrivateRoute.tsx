@@ -1,14 +1,14 @@
 import React, { useCallback, useEffect } from "react";
 import type { FC } from "react";
-import { SpotifyClient } from "./useSpotifyAuth";
+import { AuthService } from "./useSpotifyAuth";
 
 interface ProtectedRouteProps {
-  authService: SpotifyClient;
+  auth: AuthService;
   children: (apiToken: string, logOut: () => void) => React.ReactNode;
 }
 
-export const PrivateRoute: FC<ProtectedRouteProps> = ({ authService, children }) => {
-  const { isAuthenticated, signOutAndRedirect } = authService;
+export const PrivateRoute: FC<ProtectedRouteProps> = ({ auth, children }) => {
+  const { isAuthenticated, signOutAndRedirect } = auth;
 
   const logOut = useCallback(() => {
     signOutAndRedirect((url) => (window.location.href = url));
@@ -18,10 +18,10 @@ export const PrivateRoute: FC<ProtectedRouteProps> = ({ authService, children })
     if (!isAuthenticated) {
       logOut();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, logOut]);
 
   if (isAuthenticated) {
-    return <>{children(authService.token, logOut)}</>;
+    return <>{children(auth.token, logOut)}</>;
   }
 
   return null;

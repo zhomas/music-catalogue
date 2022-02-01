@@ -1,10 +1,11 @@
-import { time } from "console";
 import { useState } from "react";
 
 const SPOTIFY_EXPIRY_KEY = "spot_expiry";
 const SPOTIFY_TOKEN_KEY = "spot_token";
 
-interface UseSpotifyArgs {
+interface Args {
+  clientID: string;
+  redirectURL: string;
   now: () => number;
   persistence?: {
     getItem: (key: string) => string | null;
@@ -13,7 +14,19 @@ interface UseSpotifyArgs {
   };
 }
 
-export const useSpotify = ({ now, persistence }: UseSpotifyArgs) => {
+export interface AuthService {
+  token: string;
+  isAuthenticated: boolean;
+  storeToken: (token: string, expiresIn: number, onComplete?: () => void) => void;
+  signOutAndRedirect: (onComplete?: (to: string) => void) => void;
+}
+
+export const useSpotifyAuth = ({
+  clientID,
+  redirectURL,
+  now,
+  persistence,
+}: Args): AuthService => {
   const [token, setToken] = useState<string>(
     persistence?.getItem(SPOTIFY_TOKEN_KEY) ?? ""
   );
@@ -37,10 +50,10 @@ export const useSpotify = ({ now, persistence }: UseSpotifyArgs) => {
 
   const signOutAndRedirect = (onComplete?: (to: string) => void) => {
     const params = new URLSearchParams({
+      client_id: clientID,
+      redirect_uri: redirectURL,
       response_type: "token",
-      client_id: "31059155624846048fbb3fa9b92289c2",
       scope: "user-read-recently-played",
-      redirect_uri: "http://localhost:3000/callback",
     });
 
     const url = `https://accounts.spotify.com/authorize?${params.toString()}`;
@@ -63,5 +76,3 @@ export const useSpotify = ({ now, persistence }: UseSpotifyArgs) => {
     },
   };
 };
-
-export type SpotifyClient = ReturnType<typeof useSpotify>;

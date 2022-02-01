@@ -7,17 +7,18 @@ interface UseAPIProps<T> {
   initialValue: T;
 }
 
-export type APIHook<T> = [status: "loading" | "ok" | "error", data: T];
+type Status = "loading" | "error" | "ok";
+
+export type APIHook<T> = [status: Status, data: T];
 
 export function useAPIHook<T>({ token, path, initialValue }: UseAPIProps<T>): APIHook<T> {
-  const url = `https://api.spotify.com${path}`;
   const [data, setData] = useState<T>(initialValue);
-  const [status, setStatus] = useState<"loading" | "ok" | "error">("loading");
+  const [status, setStatus] = useState<Status>("loading");
 
   useEffect(() => {
     (async () => {
       try {
-        const response = await axios.get<T>(url, {
+        const response = await axios.get<T>(`https://api.spotify.com${path}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -28,7 +29,7 @@ export function useAPIHook<T>({ token, path, initialValue }: UseAPIProps<T>): AP
         setStatus("error");
       }
     })();
-  }, [token]);
+  }, [token, path]);
 
   return [status, data];
 }

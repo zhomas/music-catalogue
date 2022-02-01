@@ -1,12 +1,12 @@
 import React, { FC } from "react";
 import { render, screen } from "@testing-library/react";
 import { AuthCallback } from "./AuthCallback";
-import { SpotifyClient } from "../auth/useSpotifyAuth";
+import { AuthService } from "../auth/useSpotifyAuth";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 
 describe("Auth callback screen", () => {
   it("shows a loading message", () => {
-    const auth: SpotifyClient = {
+    const auth: AuthService = {
       token: "",
       isAuthenticated: false,
       storeToken: jest.fn(),
@@ -25,7 +25,7 @@ describe("Auth callback screen", () => {
   });
 
   it("stores the token supplied in the query string", () => {
-    const auth: SpotifyClient = {
+    const auth: AuthService = {
       token: "",
       isAuthenticated: false,
       storeToken: jest.fn(),
